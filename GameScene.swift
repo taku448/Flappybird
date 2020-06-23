@@ -17,6 +17,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var bird:SKSpriteNode!
     
     
+    
+    
     let birdCategory: UInt32 = 1 << 0       // 0...00001
     let groundCategory: UInt32 = 1 << 1     // 0...00010
     let wallCategory: UInt32 = 1 << 2       // 0...00100
@@ -25,6 +27,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     var score = 0
     var scoreLabelNode:SKLabelNode!
+    
     var bestScoreLabelNode:SKLabelNode!
     let userDefaults:UserDefaults = UserDefaults.standard
 
@@ -127,7 +130,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
             let birdSize = SKTexture(imageNamed: "bird_a").size()
 
-            let slit_length = birdSize.height * 3
+            let slit_length = birdSize.height * 5
 
             let random_y_range = birdSize.height * 3
 
@@ -232,8 +235,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
             
             print("ScoreUp")
-            score += 1
+            
+            score += 3
             scoreLabelNode.text = "Score:\(score)"
+
+            var coin = SKAudioNode()
+            coin = SKAudioNode(fileNamed: "coin01")
+            addChild(coin)
+            
             var bestScore = userDefaults.integer(forKey: "BEST")
             if score > bestScore {
                 bestScore = score
