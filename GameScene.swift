@@ -15,6 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scrollNode:SKNode!
     var wallNode:SKNode!
     var bird:SKSpriteNode!
+    var cherryNode:SKNode!
     
     
     
@@ -23,6 +24,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory: UInt32 = 1 << 1     // 0...00010
     let wallCategory: UInt32 = 1 << 2       // 0...00100
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
+    let cherryCategory: UInt32 = 1 << 4     // 0...10000
 
 
     var score = 0
@@ -49,7 +51,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCloud()
         setupWall()
         setupBird()
-        
         setupScoreLabel()
         
     }
@@ -135,9 +136,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let random_y_range = birdSize.height * 3
 
             let groundSize = SKTexture(imageNamed: "ground").size()
+            
             let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
             let under_wall_lowest_y = center_y - slit_length / 2 - wallTexture.size().height / 2 - random_y_range / 2
 
+            
             let createWallAnimation = SKAction.run({
             
                 let wall = SKNode()
@@ -149,6 +152,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let under_wall_y = under_wall_lowest_y + random_y
 
                 let under = SKSpriteNode(texture: wallTexture)
+                
                 under.position = CGPoint(x: 0, y: under_wall_y)
                 
                 under.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
@@ -174,7 +178,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 scoreNode.physicsBody?.isDynamic = false
                 scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
                 scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
-
+                
+                
                 wall.addChild(scoreNode)
                 
                 wall.run(wallAnimation)
@@ -182,11 +187,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.wallNode.addChild(wall)
             })
 
-            let waitAnimation = SKAction.wait(forDuration: 2)
+            let waitAnimation = SKAction.wait(forDuration: 4)
 
             let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createWallAnimation, waitAnimation]))
 
             wallNode.run(repeatForeverAnimation)
+            
+                let cherryTexture = SKTexture(imageNamed: "cherry")
+                cherryTexture.filteringMode = .nearest
+                
+            let cherry = SKSpriteNode(texture: cherryTexture)
+            
+            
+                let groundTexture = SKTexture(imageNamed: "ground")
+                groundTexture.filteringMode = .nearest
+                // テクスチャを指定してスプライトを作成する
+                let cherrySprite = SKSpriteNode(texture: cherryTexture)
+            
+            cherrySprite.zPosition = -200
+            
+                
+            let cherrymovingDistance = CGFloat(self.frame.size.width + cherryTexture.size().width)
+            
+            let random_y = CGFloat.random(in: 0..<random_y_range)
+
+            let under_wall_y = under_wall_lowest_y + random_y
+                
+            let moveCherry = SKAction.moveBy(
+                x: -cherrymovingDistance,
+                y: under_wall_y + wallTexture.size().height + slit_length/2,
+                duration:4
+            )
+                let removeCherry = SKAction.removeFromParent()
+
+                let cherryAnimation = SKAction.sequence([moveCherry, removeCherry])
+        
+             cherry.run(cherryAnimation)
+            
         }
 
     func setupBird(){
@@ -242,6 +279,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             var coin = SKAudioNode()
             coin = SKAudioNode(fileNamed: "coin01")
             addChild(coin)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 0.4秒後に実行したい処理 }}
+                coin.removeFromParent()}
             
             var bestScore = userDefaults.integer(forKey: "BEST")
             if score > bestScore {
