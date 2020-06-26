@@ -15,6 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scrollNode:SKNode!
     var wallNode:SKNode!
     var bird:SKSpriteNode!
+    var birdNode:SKNode!
     var cherryNode:SKNode!
     
     
@@ -24,11 +25,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory: UInt32 = 1 << 1     // 0...00010
     let wallCategory: UInt32 = 1 << 2       // 0...00100
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
-    let cherryCategory: UInt32 = 1 << 4     // 0...10000
+    let itemCategory: UInt32 = 1 << 4       // 0...10000
 
 
     var score = 0
     var scoreLabelNode:SKLabelNode!
+    
+    var itemscore = 0
+    var itemscoreLabelNode:SKLabelNode!
+    
     
     var bestScoreLabelNode:SKLabelNode!
     let userDefaults:UserDefaults = UserDefaults.standard
@@ -47,11 +52,101 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
         
+        cherryNode = SKNode()
+        scrollNode.addChild(cherryNode)
+        
+        setupCherry()
         setupGround()
         setupCloud()
         setupWall()
         setupBird()
         setupScoreLabel()
+        setupItemScoreLabel()
+        
+    }
+    
+    func setupItemScoreLabel(){
+        
+    }
+    func setupCherry() {
+        
+            
+                let cherryTexture = SKTexture(imageNamed: "cherry")
+                cherryTexture.filteringMode = .linear
+            
+            let wallTexture = SKTexture(imageNamed: "wall")
+        wallTexture.filteringMode = .nearest
+        
+        
+                let cherrymovingDistance = CGFloat(self.frame.size.width + cherryTexture.size().width)
+
+        let moveCherry = SKAction.moveBy(x: -cherrymovingDistance, y: 0, duration:1)
+
+                let removeCherry = SKAction.removeFromParent()
+
+                let cherryAnimation = SKAction.sequence([moveCherry, removeCherry])
+
+                let createCherryAnimation = SKAction.run({
+                    
+                    let sprite = SKSpriteNode(texture: cherryTexture)
+                    
+                    sprite.position = CGPoint(
+                        x: self.frame.size.width + cherryTexture.size().width / 2,
+                        y: self.frame.size.height / 2 )
+                    
+                    sprite.physicsBody = SKPhysicsBody(rectangleOf:
+                        cherryTexture.size())
+                    
+                    sprite.physicsBody?.categoryBitMask = self.itemCategory
+                    
+                    sprite.physicsBody?.isDynamic = true
+                    
+                    sprite.run(cherryAnimation)
+                    
+                    
+                    let cherryNode = SKNode()
+                    cherryNode.position = CGPoint(
+                        x: self.frame.size.width + cherryTexture.size().width / 2,
+                        y: self.frame.size.height / 2)
+                    
+                    cherryNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: cherryTexture.size().width,
+                              height: self.frame.size.height))
+                    
+                    cherryNode.physicsBody?.isDynamic = false
+                    cherryNode.physicsBody?.categoryBitMask = self.itemCategory
+                    
+                    cherryNode.physicsBody?.collisionBitMask = self.birdCategory
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    sprite.addChild(cherryNode)
+
+                    self.cherryNode.addChild(sprite)
+                    
+                    
+                    
+                })
+        
+
+                // 次の壁作成までの時間待ちのアクションを作成
+                let waitAnimation = SKAction.wait(forDuration: 1)
+        
+        
+
+                // 壁を作成->時間待ち->壁を作成を無限に繰り返すアクションを作成
+                let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createCherryAnimation, waitAnimation]))
+
+        
+        
+                cherryNode.run(repeatForeverAnimation)
+        
+            
+        
         
     }
     
@@ -104,7 +199,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     for i in 0..<needCloudNumber {
         let sprite = SKSpriteNode(texture: cloudTexture)
         
-        sprite.zPosition = -100
+        sprite.zPosition = -200
 
         sprite.position = CGPoint(
             x: cloudTexture.size().width / 2 + cloudTexture.size().width * CGFloat(i),
@@ -119,7 +214,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         func setupWall() {
             
             let wallTexture = SKTexture(imageNamed: "wall")
-            wallTexture.filteringMode = .linear
+            wallTexture.filteringMode = .nearest
+            
 
             let movingDistance = CGFloat(self.frame.size.width + wallTexture.size().width)
 
@@ -177,7 +273,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 scoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: upper.size.width, height: self.frame.size.height))
                 scoreNode.physicsBody?.isDynamic = false
                 scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
-                scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
                 
                 
                 wall.addChild(scoreNode)
@@ -193,36 +288,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
             wallNode.run(repeatForeverAnimation)
             
-                let cherryTexture = SKTexture(imageNamed: "cherry")
-                cherryTexture.filteringMode = .nearest
                 
-            let cherry = SKSpriteNode(texture: cherryTexture)
-            
-            
-                let groundTexture = SKTexture(imageNamed: "ground")
-                groundTexture.filteringMode = .nearest
-                // テクスチャを指定してスプライトを作成する
-                let cherrySprite = SKSpriteNode(texture: cherryTexture)
-            
-            cherrySprite.zPosition = -200
-            
-                
-            let cherrymovingDistance = CGFloat(self.frame.size.width + cherryTexture.size().width)
-            
-            let random_y = CGFloat.random(in: 0..<random_y_range)
-
-            let under_wall_y = under_wall_lowest_y + random_y
-                
-            let moveCherry = SKAction.moveBy(
-                x: -cherrymovingDistance,
-                y: under_wall_y + wallTexture.size().height + slit_length/2,
-                duration:4
-            )
-                let removeCherry = SKAction.removeFromParent()
-
-                let cherryAnimation = SKAction.sequence([moveCherry, removeCherry])
-        
-             cherry.run(cherryAnimation)
             
         }
 
@@ -244,8 +310,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.physicsBody?.allowsRotation = false
 
         bird.physicsBody?.categoryBitMask = birdCategory
-        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
-        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory 
+        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | itemCategory
+    
         
             bird.run(flap)
             
@@ -258,7 +325,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
         bird.physicsBody?.velocity = CGVector.zero
         
-        bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 15))
+            bird.physicsBody?.applyImpulse(CGVector(dx: 0.2, dy: 15))
         }else if bird.speed == 0 {
             restart()
         }
@@ -269,17 +336,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         
-        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
+        if (contact.bodyA.categoryBitMask & itemCategory) == itemCategory || (contact.bodyB.categoryBitMask & itemCategory) == itemCategory  {
             
-            print("ScoreUp")
+            print("scoreUp")
             
-            score += 3
+            score += 1
             scoreLabelNode.text = "Score:\(score)"
-
+            
+            self.cherryNode.removeAllChildren()
+            
             var coin = SKAudioNode()
             coin = SKAudioNode(fileNamed: "coin01")
             addChild(coin)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 0.4秒後に実行したい処理 }}
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 0.3秒後に実行したい処理 }}
                 coin.removeFromParent()}
             
             var bestScore = userDefaults.integer(forKey: "BEST")
@@ -288,8 +357,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 bestScoreLabelNode.text = "Best Score:\(bestScore)"
                 userDefaults.set(bestScore, forKey: "BEST")
                     userDefaults.synchronize()
+                
+                
+
             }
-        }else{
+
+        }else {
             print("GameOver")
             
             scrollNode.speed = 0

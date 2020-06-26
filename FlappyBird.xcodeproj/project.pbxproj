@@ -49,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				E8F2FCC024A0A649004CC0F8 /* jump01.mp3 */,
+				E8F2FCC424A339D1004CC0F8 /* cherry.png */,
 				E8F2FCBE24A0A506004CC0F8 /* coin01.mp3 */,
 				E8F2FCBC249EFEDC004CC0F8 /* GameScene.swift */,
 				E8F2FCA5249EFADA004CC0F8 /* FlappyBird */,
@@ -72,7 +73,6 @@
 				E8F2FCAA249EFADA004CC0F8 /* ViewController.swift */,
 				E8F2FCAC249EFADA004CC0F8 /* Main.storyboard */,
 				E8F2FCAF249EFADC004CC0F8 /* Assets.xcassets */,
-				E8F2FCC424A339D1004CC0F8 /* cherry.png */,
 				E8F2FCB1249EFADC004CC0F8 /* LaunchScreen.storyboard */,
 				E8F2FCB4249EFADC004CC0F8 /* Info.plist */,
 			);
